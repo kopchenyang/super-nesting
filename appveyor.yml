@@ -1,0 +1,38 @@
+# AppVeyor CI - Windows 自动构建
+# 推送代码后自动生成 Win7 兼容 exe
+
+version: 1.0.{build}
+
+image: Visual Studio 2019
+
+environment:
+  PYTHON_URL: "https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe"
+
+install:
+  - cmd: |
+      echo 安装 Python 3.8 (Win7兼容)
+      curl -o python-installer.exe %PYTHON_URL%
+      python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
+      set PATH=C:\Program Files\Python38;C:\Program Files\Python38\Scripts;%PATH%
+      python --version
+      pip install PyQt5 pyinstaller
+
+build_script:
+  - cmd: |
+      echo 🔨 开始打包(兼容Win7)...
+      pyinstaller --name="SuperNesting" --windowed --onefile --clean --win-private-assemblies main.py
+
+after_build:
+  - cmd: |
+      echo ✅ 构建完成！
+      dir dist\
+
+artifacts:
+  - path: dist\SuperNesting.exe
+    name: 服装CAD超级排料系统
+
+deploy:
+  - provider: Webhook
+    url: https://api.day.app/YOUR_BARK_KEY/构建完成/SuperNesting.exe已生成
+    on:
+      branch: main
