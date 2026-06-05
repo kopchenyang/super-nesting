@@ -10,16 +10,10 @@ from typing import List, Tuple, Optional, Callable
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 
-try:
-    from .models import (
-        Piece, Point, Rect, Marker, NestingConfig, NestingMode,
-        RotationMode, GrainDirection
-    )
-except ImportError:
-    from models import (
-        Piece, Point, Rect, Marker, NestingConfig, NestingMode,
-        RotationMode, GrainDirection
-    )
+from core.models import (
+    Piece, Point, Rect, Marker, NestingConfig, NestingMode,
+    RotationMode, GrainDirection
+)
 
 
 @dataclass
