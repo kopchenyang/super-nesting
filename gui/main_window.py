@@ -179,10 +179,7 @@ class MainWindow(QMainWindow):
 
     def _setup_config(self):
         """初始化配置"""
-        try:
-            from ..core.models import NestingConfig
-        except ImportError:
-            from core.models import NestingConfig
+        from core.models import NestingConfig
         self.config = NestingConfig()
 
     def _setup_ui(self):
@@ -391,12 +388,8 @@ class MainWindow(QMainWindow):
         """加载文件"""
         self.statusbar.showMessage(f"正在解析 {filepath}...")
         try:
-            try:
-                from ..parsers.plt_parser import PLTParser
-                from ..parsers.dxf_parser import DXFParser
-            except ImportError:
-                from parsers.plt_parser import PLTParser
-                from parsers.dxf_parser import DXFParser
+            from parsers.plt_parser import PLTParser
+        from parsers.dxf_parser import DXFParser
 
             if file_type == 'plt':
                 parser = PLTParser(self.config)
@@ -432,12 +425,8 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "提示", "请先导入裁片文件！")
             return
 
-        try:
-            from ..core.models import Marker, NestingConfig
-            from ..core.engine import NestingEngine
-        except ImportError:
-            from core.models import Marker, NestingConfig
-            from core.engine import NestingEngine
+        from core.models import Marker
+        from core.engine import NestingEngine
 
         # 构建Marker
         self.marker = Marker(
