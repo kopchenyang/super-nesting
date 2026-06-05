@@ -6,12 +6,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: 安装 Python 3.8
+      - name: 安装 Python 3.8 (Win7兼容)
         uses: actions/setup-python@v4
         with:
           python-version: '3.8'
@@ -20,40 +20,26 @@ jobs:
         run: pip install PyQt5 pyinstaller
 
       - name: 构建exe
-        run: pyinstaller --name="SuperNesting" --windowed --onefile --clean --noconfirm main.py
+        run: |
+          pyinstaller --name="SuperNesting" `
+            --windowed --onefile --clean --noconfirm `
+            --paths . `
+            --hidden-import core `
+            --hidden-import core.models `
+            --hidden-import core.engine `
+            --hidden-import parsers `
+            --hidden-import parsers.plt_parser `
+            --hidden-import parsers.dxf_parser `
+            --hidden-import gui `
+            --hidden-import gui.main_window `
+            --hidden-import PyQt5 `
+            --hidden-import PyQt5.QtCore `
+            --hidden-import PyQt5.QtGui `
+            --hidden-import PyQt5.QtWidgets `
+            main.py
 
       - name: 上传成品
         uses: actions/upload-artifact@v4
         with:
-          name: 服装CAD超级排料系统-Win7
-          path: dist/SuperNesting.exe
-
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: 安装 Wine
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt update
-          sudo apt install -y wine64 wine32 xvfb
-
-      - name: 安装 Windows Python
-        run: |
-          curl -o python-installer.exe https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe
-          wine python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
-
-      - name: 安装 PyInstaller
-        run: |
-          wine pip install PyQt5 pyinstaller
-
-      - name: 构建exe
-        run: |
-          wine pyinstaller --name="SuperNesting" --windowed --onefile --clean --noconfirm main.py
-
-      - name: 上传成品
-        uses: actions/upload-artifact@v4
-        with:
-          name: 服装CAD超级排料系统-Linux构建
+          name: SuperNesting-Win7
           path: dist/SuperNesting.exe
