@@ -1,0 +1,39 @@
+# Gitee Go CI/CD 自动构建配置
+# 推送代码后自动生成 Windows exe
+
+name: 服装CAD超级排料系统-自动构建
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-windows-exe:
+    name: 构建Windows可执行文件
+    runs-on: windows-2022
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 安装 Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyQt5 pyinstaller
+
+      - name: 构建 exe
+        run: |
+          pyinstaller --name="服装CAD超级排料系统" --windowed --onefile --clean main.py
+        shell: cmd
+
+      - name: 上传成品
+        uses: actions/upload-artifact@v3
+        with:
+          name: 服装CAD超级排料系统-Win7兼容版
+          path: dist/服装CAD超级排料系统.exe
