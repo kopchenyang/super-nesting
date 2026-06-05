@@ -1,100 +1,84 @@
 #!/usr/bin/env python3
 """
 服装CAD超级排料系统 - 主程序入口
-兼容 Windows 7/8/10/11
-免加密，自由使用
+兼容 Windows 7/8/10/11，免加密
 """
 
 import sys
 import os
 
-# 添加项目根目录到路径
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# 兼容PyInstaller打包路径
+if getattr(sys, 'frozen', False):
+    BASE_DIR = sys._MEIPASS
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+sys.path.insert(0, BASE_DIR)
 
 
 def main():
-    """主入口"""
-    # 检查依赖
+    """主入口 - GUI模式"""
     try:
-        import PyQt5
-    except ImportError:
-        print("❌ 未安装 PyQt5")
-        print("   请运行: pip install PyQt5")
-        print("   或运行: pip install -r requirements.txt")
-        input("按回车键退出...")
-        sys.exit(1)
-
-    # 启动GUI
-    from gui.main_window import run
-    run()
+        from gui.main_window import run
+        run()
+    except ImportError as e:
+        import tkinter as tk
+        from tkinter import messagebox
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror("错误", f"模块导入失败: {e}\n\n请重新安装程序")
+    except Exception as e:
+        import traceback
+        err_file = os.path.join(os.path.expanduser("~"), "super_nesting_error.txt")
+        with open(err_file, 'w') as f:
+            traceback.print_exc(file=f)
+        import tkinter as tk
+        from tkinter import messagebox
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror("错误",
+            f"程序出错: {e}\n\n详细日志已保存到:\n{err_file}")
 
 
 def main_cli():
-    """命令行模式（无需GUI）"""
+    """命令行模式"""
     import argparse
     from core.models import NestingConfig, Marker
     from core.engine import NestingEngine
     from parsers.plt_parser import PLTParser
-    from parsers.dxf_parser import DXFParser
 
-    parser = argparse.ArgumentParser(
-        description="服装CAD超级排料系统 - 命令行版"
-    )
-    parser.add_argument("input", help="输入文件 (.plt 或 .dxf)")
-    parser.add_argument("-w", "--width", type=float, default=1500,
-                        help="面料幅宽(mm), 默认1500")
-    parser.add_argument("-o", "--output", default="result.plt",
-                        help="输出文件, 默认result.plt")
+    parser = argparse.ArgumentParser(description="服装CAD超级排料系统")
+    parser.add_argument("input", help="输入文件 (.plt)")
+    parser.add_argument("-w", "--width", type=float, default=1500, help="面料幅宽(mm)")
+    parser.add_argument("-o", "--output", default="result.plt", help="输出文件")
     parser.add_argument("-a", "--algorithm", default="hybrid",
-                        choices=["hybrid", "greedy", "genetic"],
-                        help="排料算法, 默认hybrid")
-    parser.add_argument("-t", "--time", type=int, default=300,
-                        help="时间限制(秒), 默认300")
+                        choices=["hybrid", "greedy", "genetic"])
 
     args = parser.parse_args()
 
-    # 加载文件
-    ext = os.path.splitext(args.input)[1].lower()
     config = NestingConfig()
     config.algorithm = args.algorithm
-    config.time_limit_seconds = args.time
 
-    if ext == '.plt':
-        parser_obj = PLTParser(config)
-    elif ext == '.dxf':
+    ext = os.path.splitext(args.input)[1].lower()
+    if ext == '.dxf':
+        from parsers.dxf_parser import DXFParser
         parser_obj = DXFParser(config)
     else:
-        print(f"不支持的文件格式: {ext}")
-        sys.exit(1)
+        parser_obj = PLTParser(config)
 
-    print(f"📂 加载文件: {args.input}")
+    print(f"加载: {args.input}")
     pieces = parser_obj.parse_file(args.input)
-    print(f"   解析完成: {len(pieces)} 个裁片")
 
-    # 排料
-    marker = Marker(
-        name=os.path.basename(args.input),
-        fabric_width=args.width,
-        pieces=pieces,
-    )
+    marker = Marker(name=os.path.basename(args.input),
+                    fabric_width=args.width, pieces=pieces)
 
-    print(f"🚀 开始排料 (算法: {args.algorithm}, 幅宽: {args.width}mm)")
     engine = NestingEngine(config)
-    result = engine.nest(
-        marker,
-        progress_callback=lambda p, s: print(f"   [{p}%] {s}")
-    )
+    result = engine.nest(marker, progress_callback=lambda p, s: print(f"  [{p}%] {s}"))
 
-    print(f"\n✅ 排料完成!")
-    print(f"   利用率: {result.utilization:.1f}%")
-    print(f"   用时: {result.elapsed_time:.1f}秒")
-    print(f"   输出: {args.output}")
-
-    # TODO: 导出结果
+    print(f"完成! 利用率: {result.utilization:.1f}%")
 
 
 if __name__ == "__main__":
-    # 无参数时启动GUI，有参数时启动CLI
     if len(sys.argv) > 1:
         main_cli()
     else:
