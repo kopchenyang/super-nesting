@@ -5,10 +5,7 @@
 
 from typing import List, Optional, Dict, Tuple
 import math
-try:
-    from ..core.models import Piece, Point, Notch, Drill, NestingConfig
-except ImportError:
-    from core.models import Piece, Point, Notch, Drill, NestingConfig
+from core.models import Piece, Point, Notch, Drill, NestingConfig
 
 
 class DXFParser:
