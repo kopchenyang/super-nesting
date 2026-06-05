@@ -1,0 +1,14 @@
+# 服装CAD超级排料系统 - 依赖列表
+# 兼容 Windows 7 (Python 3.8+)
+
+# GUI框架 (Win7最高支持PyQt5)
+PyQt5>=5.15.0
+
+# 数值计算
+numpy>=1.20.0
+
+# 可选: DXF支持库
+# ezdxf>=1.0.0
+
+# 可选: 打包为exe
+# pyinstaller>=5.0
