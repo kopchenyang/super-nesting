@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@v3
 
@@ -20,10 +20,28 @@ jobs:
         run: pip install PyQt5 pyinstaller
 
       - name: 构建exe
-        run: pyinstaller --name=SuperNesting --windowed --onefile --clean --win-private-assemblies main.py
+        run: |
+          pyinstaller --name="SuperNesting" --windowed --onefile --clean --win-private-assemblies `
+            --hidden-import=core `
+            --hidden-import=core.models `
+            --hidden-import=core.engine `
+            --hidden-import=parsers `
+            --hidden-import=parsers.plt_parser `
+            --hidden-import=parsers.dxf_parser `
+            --hidden-import=gui `
+            --hidden-import=gui.main_window `
+            --hidden-import=PyQt5 `
+            --hidden-import=PyQt5.QtWidgets `
+            --hidden-import=PyQt5.QtCore `
+            --hidden-import=PyQt5.QtGui `
+            --add-data="core;core" `
+            --add-data="parsers;parsers" `
+            --add-data="gui;gui" `
+            --add-data="config;config" `
+            main.py
 
       - name: 上传成品
         uses: actions/upload-artifact@v4
         with:
-          name: SuperNesting-Win7
+          name: 服装CAD超级排料系统-Win7兼容版
           path: dist/SuperNesting.exe
