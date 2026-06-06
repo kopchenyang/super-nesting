@@ -24,6 +24,7 @@ jobs:
           pyinstaller --name="SuperNesting" `
             --windowed --onefile --clean --noconfirm `
             --paths . `
+            --collect-all PyQt5 `
             --hidden-import core `
             --hidden-import core.models `
             --hidden-import core.engine `
@@ -32,10 +33,6 @@ jobs:
             --hidden-import parsers.dxf_parser `
             --hidden-import gui `
             --hidden-import gui.main_window `
-            --hidden-import PyQt5 `
-            --hidden-import PyQt5.QtCore `
-            --hidden-import PyQt5.QtGui `
-            --hidden-import PyQt5.QtWidgets `
             main.py
 
       - name: 上传成品
