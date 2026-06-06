@@ -6,37 +6,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-onedir:
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@v3
 
-      - name: 安装 Python 3.8 (Win7兼容)
+      - name: 安装 Python 3.8
         uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
-      - name: 安装依赖
-        run: pip install PyQt5 pyinstaller
+      - name: 安装 VC++ Redist
+        run: choco install vcredist2015 -y
 
-      - name: 构建exe
+      - name: 安装依赖(固定版本)
+        run: pip install PyQt5==5.15.4 pyinstaller
+
+      - name: 构建(文件夹模式)
         run: |
-          pyinstaller --name="SuperNesting" `
-            --windowed --onefile --clean --noconfirm `
-            --paths . `
-            --collect-all PyQt5 `
-            --hidden-import core `
-            --hidden-import core.models `
-            --hidden-import core.engine `
-            --hidden-import parsers `
-            --hidden-import parsers.plt_parser `
-            --hidden-import parsers.dxf_parser `
-            --hidden-import gui `
-            --hidden-import gui.main_window `
-            main.py
+          pyinstaller --name="SuperNesting" --windowed --onedir --clean --noconfirm --paths . --collect-all PyQt5 --hidden-import core --hidden-import core.models --hidden-import core.engine --hidden-import parsers --hidden-import parsers.plt_parser --hidden-import parsers.dxf_parser --hidden-import gui --hidden-import gui.main_window main.py
+      - name: 打包为ZIP
+        run: Compress-Archive -Path dist/SuperNesting/* -DestinationPath dist/SuperNesting-Win7.zip
 
       - name: 上传成品
         uses: actions/upload-artifact@v4
         with:
           name: SuperNesting-Win7
-          path: dist/SuperNesting.exe
+          path: dist/SuperNesting-Win7.zip
